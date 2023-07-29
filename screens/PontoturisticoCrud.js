@@ -5,13 +5,13 @@ import firestore from "@react-native-firebase/firestore";
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 
-const HotelCrud = () => {
+const PontoturisticoCrud = () => {
   const navigation = useNavigation();
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: true,
-      title: 'Crud Hotel',
+      title: 'Crud de Pontos Turísticos',
       headerTitleAlign: 'center',
       headerTitleStyle: {
         fontSize: 20,
@@ -36,87 +36,86 @@ const HotelCrud = () => {
     });
   }, [navigation]);
 
-  const [hoteis, setHoteis] = useState([]);
-  const [nome_hot, setNome] = useState('');
-  const [localizacao_hot, setLocalizacao] = useState('');
-  const [descricao_hot, setDescricao] = useState('');
+  const [pontosTuristicos, setPontosTuristicos] = useState([]);
+  const [nome_ptur, setNomePtur] = useState('');
+  const [localizacao_ptur, setLocalizacaoPtur] = useState('');
+  const [descricao_ptur, setDescricaoPtur] = useState('');
   const [editando, setEditando] = useState(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
   useEffect(() => {
     const unsubscribe = firestore()
-      .collection('hoteis')
+      .collection('pontos_turisticos')
       .onSnapshot((snapshot) => {
-        const hoteisData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), selecionado: false }));
-        setHoteis(hoteisData);
+        const pontosData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), selecionado: false }));
+        setPontosTuristicos(pontosData);
       });
 
     return () => unsubscribe();
   }, []);
 
-  const handleCriarHotel = async () => {
+  const handleCriarPontoTuristico = async () => {
     try {
-      await firestore().collection('hoteis').add({ nome_hot, localizacao_hot, descricao_hot });
-      setNome('');
-      setLocalizacao('');
-      setDescricao('');
+      await firestore().collection('pontos_turisticos').add({ nome_ptur, localizacao_ptur, descricao_ptur });
+      setNomePtur('');
+      setLocalizacaoPtur('');
+      setDescricaoPtur('');
       setMostrarFormulario(false);
     } catch (error) {
-      console.log('Erro ao criar hotel:', error);
+      console.log('Erro ao criar ponto turístico:', error);
     }
   };
 
-  const handleEditarHotel = async () => {
+  const handleEditarPontoTuristico = async () => {
     if (!editando) {
-      Alert.alert('Atenção', 'Nenhum hotel selecionado para editar.');
-      return; // Evitar a edição caso o hotel selecionado não esteja definido
+      return;
     }
 
     try {
-      await firestore().collection('hoteis').doc(editando.id).update({ nome_hot, localizacao_hot, descricao_hot });
-      setNome('');
-      setLocalizacao('');
-      setDescricao('');
+      await firestore().collection('pontos_turisticos').doc(editando.id).update({ nome_ptur, localizacao_ptur, descricao_ptur });
+      setNomePtur('');
+      setLocalizacaoPtur('');
+      setDescricaoPtur('');
       setEditando(null);
       setMostrarFormulario(false);
     } catch (error) {
-      console.log('Erro ao editar hotel:', error);
+      console.log('Erro ao editar ponto turístico:', error);
     }
   };
 
-  const handleExcluirHotel = async () => {
-    const hotelSelecionado = hoteis.find((hotel) => hotel.selecionado);
+  const handleExcluirPontoTuristico = async () => {
+    const pontoSelecionado = pontosTuristicos.find((ponto) => ponto.selecionado);
 
-    if (hotelSelecionado) {
+    if (pontoSelecionado) {
       try {
-        await firestore().collection('hoteis').doc(hotelSelecionado.id).delete();
+        await firestore().collection('pontos_turisticos').doc(pontoSelecionado.id).delete();
         setEditando(null);
         setMostrarFormulario(false);
       } catch (error) {
-        console.log('Erro ao excluir hotel:', error);
+        console.log('Erro ao excluir ponto turístico:', error);
       }
     } else {
-      Alert.alert('Atenção', 'Nenhum hotel selecionado para excluir.');
+      Alert.alert('Atenção', 'Nenhum ponto turístico selecionado para excluir.');
     }
   };
 
-  const handleEditar = (hotel) => {
-    if (hotel) {
-      setEditando(hotel);
-      setNome(hotel.nome_hot);
-      setLocalizacao(hotel.localizacao_hot);
-      setDescricao(hotel.descricao_hot);
+  const handleEditar = (ponto) => {
+    if (ponto) {
+      setEditando(ponto);
+      setNomePtur(ponto.nome_ptur);
+      setLocalizacaoPtur(ponto.localizacao_ptur);
+      setDescricaoPtur(ponto.descricao_ptur);
       setMostrarFormulario(true);
     } else {
-      Alert.alert('Atenção', 'Nenhum hotel selecionado para editar.');
+      Alert.alert('Atenção', 'Nenhum ponto turístico selecionado para editar.');
     }
   };
 
-  const handleSelecionarHotel = (hotel) => {
-    const novosHoteis = hoteis.map((item) =>
-      item.id === hotel.id ? { ...item, selecionado: !item.selecionado } : item
+  const handleSelecionarPontoTuristico = (ponto) => {
+    const novosPontos = pontosTuristicos.map((item) =>
+      item.id === ponto.id ? { ...item, selecionado: !item.selecionado } : item
     );
-    setHoteis(novosHoteis);
+    setPontosTuristicos(novosPontos);
   };
 
   return (
@@ -136,24 +135,24 @@ const HotelCrud = () => {
             <Text style={styles.tableCellHeaderText}>Descrição</Text>
           </View>
         </View>
-        {hoteis.map((item) => (
+        {pontosTuristicos.map((item) => (
           <TouchableOpacity key={item.id} onPress={() => handleEditar(item)}>
             <View style={styles.tableRow}>
               <View style={[styles.tableCell, styles.centeredCell]}>
                 <CheckBox
                   value={item.selecionado}
-                  onValueChange={() => handleSelecionarHotel(item)}
+                  onValueChange={() => handleSelecionarPontoTuristico(item)}
                 />
               </View>
-              <View style={[styles.tableCell, styles.centeredCell]}>
-                <Text style={styles.tableCellText}>{item.nome_hot}</Text>
+              <View style={styles.tableCell}>
+                <Text style={styles.tableCellText}>{item.nome_ptur}</Text>
               </View>
-              <View style={[styles.tableCell, styles.centeredCell]}>
-                <Text style={styles.tableCellText}>{item.localizacao_hot}</Text>
+              <View style={styles.tableCell}>
+                <Text style={styles.tableCellText}>{item.localizacao_ptur}</Text>
               </View>
-              <View style={[styles.tableCell, styles.centeredCell]}>
+              <View style={styles.tableCell}>
                 <Text style={styles.tableCellText} numberOfLines={1} ellipsizeMode="tail">
-                  {item.descricao_hot}
+                  {item.descricao_ptur}
                 </Text>
               </View>
             </View>
@@ -162,30 +161,30 @@ const HotelCrud = () => {
       </View>
       {mostrarFormulario && (
         <View style={styles.formulario}>
-          <Text style={styles.formTitle}>{editando ? 'Editar Hotel:' : 'Novo Hotel:'}</Text>
+          <Text style={styles.formTitle}>{editando ? 'Editar Ponto Turístico:' : 'Novo Ponto Turístico:'}</Text>
           <View style={styles.inputContainer}>
             <TextInput
               placeholder="Nome"
-              value={nome_hot}
-              onChangeText={(text) => setNome(text)}
+              value={nome_ptur}
+              onChangeText={(text) => setNomePtur(text)}
               style={styles.input}
             />
             <TextInput
               placeholder="Localizacao"
-              value={localizacao_hot}
-              onChangeText={(text) => setLocalizacao(text)}
+              value={localizacao_ptur}
+              onChangeText={(text) => setLocalizacaoPtur(text)}
               style={styles.input}
             />
             <TextInput
               placeholder="Descrição"
-              value={descricao_hot}
-              onChangeText={(text) => setDescricao(text)}
+              value={descricao_ptur}
+              onChangeText={(text) => setDescricaoPtur(text)}
               style={styles.input}
             />
           </View>
           <TouchableOpacity
             style={styles.button}
-            onPress={editando ? handleEditarHotel : handleCriarHotel}
+            onPress={editando ? handleEditarPontoTuristico : handleCriarPontoTuristico}
           >
             <Text style={styles.buttonText}>{editando ? 'Salvar' : 'Criar'}</Text>
           </TouchableOpacity>
@@ -195,10 +194,10 @@ const HotelCrud = () => {
         <TouchableOpacity style={[styles.botao, { marginRight: 8 }]} onPress={() => setMostrarFormulario(true)}>
           <Text style={styles.buttonText}>Adicionar</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.botao, { marginRight: 8 }]} onPress={() => handleEditar(hoteis.find(hotel => hotel.selecionado))}>
+        <TouchableOpacity style={[styles.botao, { marginRight: 8 }]} onPress={() => handleEditar(pontosTuristicos.find(ponto => ponto.selecionado))}>
           <Text style={styles.buttonText}>Editar</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.botao} onPress={handleExcluirHotel}>
+        <TouchableOpacity style={styles.botao} onPress={handleExcluirPontoTuristico}>
           <Text style={styles.buttonText}>Excluir</Text>
         </TouchableOpacity>
       </View>
@@ -224,7 +223,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#ccc',
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 8,
   },
   tableCell: {
     flex: 1,
@@ -235,15 +234,10 @@ const styles = StyleSheet.create({
   },
   tableCellHeaderText: {
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   tableCellText: {
     textAlign: 'center',
-  },
-  centeredHeader: {
-    alignItems: 'center',
-  },
-  centeredCell: {
-    alignItems: 'center',
   },
   formulario: {
     borderColor: '#000',
@@ -291,4 +285,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default HotelCrud;
+export default PontoturisticoCrud;

@@ -18,6 +18,7 @@ import ConverterScreen from './screens/ConverterScreen';
 import PlacaScreen from './screens/PlacaScreen';
 import OpcoesScreen from './screens/OpcoesScreen';
 import HotelCrud from './screens/HotelCrud';
+import PontoturisticoCrud from './screens/PontoturisticoCrud';
 
 
 
@@ -78,7 +79,9 @@ function HomeScreenStack() {
       <Stack.Screen name="ConverterScreen" component={ConverterScreen} options={{ headerShown: false }} />
       <Stack.Screen name="PlacaScreen" component={PlacaScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Opcoes" component={OpcoesScreen} />
-        <Stack.Screen name="HotelCrud" component={HotelCrud} />
+      <Stack.Screen name="HotelCrud" component={HotelCrud} />
+        <Stack.Screen name="PontoturisticoCrud" component={PontoturisticoCrud} />
+
     </Stack.Navigator>
   );
 }

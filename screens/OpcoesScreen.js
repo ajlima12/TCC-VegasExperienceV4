@@ -51,7 +51,7 @@ const OpcoesScreen = () => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.button}
-          //onPress={() => handleNavigation('PontosTuristicosScreen')}
+          onPress={() => handleNavigation('PontoturisticoCrud')}
         >
           <Text style={styles.buttonText}>Pontos Turisticos</Text>
         </TouchableOpacity>
