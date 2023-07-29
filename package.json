@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@react-native-community/checkbox": "^0.5.16",
     "@react-native-firebase/app": "^18.2.0",
     "@react-native-firebase/firestore": "^18.2.0",
     "@react-navigation/bottom-tabs": "^6.5.8",

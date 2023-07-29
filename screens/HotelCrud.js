@@ -1,19 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, ScrollView, Alert } from 'react-native';
+import CheckBox from '@react-native-community/checkbox';
 import firestore from "@react-native-firebase/firestore";
+import { useNavigation } from '@react-navigation/native';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const HotelCrud = () => {
+  const navigation = useNavigation();
+
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: true,
+      title: 'Crud Hotel',
+      headerTitleAlign: 'center',
+      headerTitleStyle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: 'white',
+      },
+      headerStyle: {
+        backgroundColor: '#147DEB',
+        height: 110,
+        borderBottomColor: 'transparent',
+        shadowColor: 'transparent',
+      },
+      headerLeft: () => (
+        <TouchableOpacity
+          style={{ marginLeft: 10 }}
+          onPress={() => navigation.goBack()}
+        >
+          <MaterialIcons name="arrow-back-ios" size={24} color="white" />
+        </TouchableOpacity>
+      ),
+      headerRight: () => null,
+    });
+  }, [navigation]);
+
   const [hoteis, setHoteis] = useState([]);
   const [nome_hot, setNome] = useState('');
   const [localizacao_hot, setLocalizacao] = useState('');
   const [descricao_hot, setDescricao] = useState('');
   const [editando, setEditando] = useState(null);
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
   useEffect(() => {
     const unsubscribe = firestore()
       .collection('hoteis')
       .onSnapshot((snapshot) => {
-        const hoteisData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const hoteisData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), selecionado: false }));
         setHoteis(hoteisData);
       });
 
@@ -26,28 +60,42 @@ const HotelCrud = () => {
       setNome('');
       setLocalizacao('');
       setDescricao('');
+      setMostrarFormulario(false);
     } catch (error) {
       console.log('Erro ao criar hotel:', error);
     }
   };
 
   const handleEditarHotel = async () => {
+    if (!editando) {
+      return; // Evitar a edição caso o hotel selecionado não esteja definido
+    }
+
     try {
       await firestore().collection('hoteis').doc(editando.id).update({ nome_hot, localizacao_hot, descricao_hot });
       setNome('');
       setLocalizacao('');
       setDescricao('');
       setEditando(null);
+      setMostrarFormulario(false);
     } catch (error) {
       console.log('Erro ao editar hotel:', error);
     }
   };
 
-  const handleExcluirHotel = async (id) => {
-    try {
-      await firestore().collection('hoteis').doc(id).delete();
-    } catch (error) {
-      console.log('Erro ao excluir hotel:', error);
+  const handleExcluirHotel = async () => {
+    const hotelSelecionado = hoteis.find((hotel) => hotel.selecionado);
+
+    if (hotelSelecionado) {
+      try {
+        await firestore().collection('hoteis').doc(hotelSelecionado.id).delete();
+        setEditando(null);
+        setMostrarFormulario(false);
+      } catch (error) {
+        console.log('Erro ao excluir hotel:', error);
+      }
+    } else {
+      Alert.alert('Atenção', 'Nenhum hotel selecionado para excluir.');
     }
   };
 
@@ -56,101 +104,135 @@ const HotelCrud = () => {
     setNome(hotel.nome_hot);
     setLocalizacao(hotel.localizacao_hot);
     setDescricao(hotel.descricao_hot);
+    setMostrarFormulario(true);
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.hotelItem}>
-      <Text>{item.nome_hot}</Text>
-      <Text>{item.localizacao_hot}</Text>
-      <Text>{item.descricao_hot}</Text>
-      <TouchableOpacity onPress={() => handleEditar(item)}>
-        <Text style={styles.editButton}>Editar</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => handleExcluirHotel(item.id)}>
-        <Text style={styles.deleteButton}>Excluir</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  const handleSelecionarHotel = (hotel) => {
+    const novosHoteis = hoteis.map((item) =>
+      item.id === hotel.id ? { ...item, selecionado: !item.selecionado } : item
+    );
+    setHoteis(novosHoteis);
+  };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.headerText}>Lista de Hoteis:</Text>
-      <View style={styles.tableHeader}>
-        <Text style={styles.tableHeaderText}>Nome</Text>
-        <Text style={styles.tableHeaderText}>Localização</Text>
-        <Text style={styles.tableHeaderText}>Descrição</Text>
-
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.table}>
+        <View style={styles.tableRow}>
+          <View style={[styles.tableCell, styles.tableCellHeader, { alignItems: 'center' }]}>
+            <Text style={styles.tableCellHeaderText}>Nome</Text>
+          </View>
+          <View style={[styles.tableCell, styles.tableCellHeader, { alignItems: 'center' }]}>
+            <Text style={styles.tableCellHeaderText}>Localização</Text>
+          </View>
+          <View style={[styles.tableCell, styles.tableCellHeader, { alignItems: 'center' }]}>
+            <Text style={styles.tableCellHeaderText}>Descrição</Text>
+          </View>
+        </View>
+        {hoteis.map((item) => (
+          <TouchableOpacity key={item.id} onPress={() => handleEditar(item)}>
+            <View style={styles.tableRow}>
+              <View style={styles.tableCell}>
+                <CheckBox
+                  value={item.selecionado}
+                  onValueChange={() => handleSelecionarHotel(item)}
+                />
+              </View>
+              <View style={[styles.tableCell, { alignItems: 'center' }]}>
+                <Text style={styles.tableCellText}>{item.nome_hot}</Text>
+              </View>
+              <View style={[styles.tableCell, { alignItems: 'center' }]}>
+                <Text style={styles.tableCellText}>{item.localizacao_hot}</Text>
+              </View>
+              <View style={[styles.tableCell, { alignItems: 'center' }]}>
+                <Text style={styles.tableCellText} numberOfLines={1} ellipsizeMode="tail">
+                  {item.descricao_hot}
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        ))}
       </View>
-      <FlatList
-        data={hoteis}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        style={styles.hoteisList}
-      />
-      <Text style={styles.formTitle}>{editando ? 'Editar Hotel:' : 'Novo Hotel:'}</Text>
-      <TextInput
-        placeholder="Nome"
-        value={nome_hot}
-        onChangeText={(text) => setNome(text)}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Localizacao"
-        value={localizacao_hot}
-        onChangeText={(text) => setLocalizacao(text)}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Descrição"
-        value={descricao_hot}
-        onChangeText={(text) => setDescricao(text)}
-        style={styles.input}
-      />
-      <TouchableOpacity
-        style={styles.button}
-        onPress={editando ? handleEditarHotel : handleCriarHotel}
-      >
-        <Text style={styles.buttonText}>{editando ? 'Salvar' : 'Criar'}</Text>
-      </TouchableOpacity>
-    </View>
+      {mostrarFormulario && (
+        <View style={styles.formulario}>
+          <Text style={styles.formTitle}>{editando ? 'Editar Hotel:' : 'Novo Hotel:'}</Text>
+          <TextInput
+            placeholder="Nome"
+            value={nome_hot}
+            onChangeText={(text) => setNome(text)}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Localizacao"
+            value={localizacao_hot}
+            onChangeText={(text) => setLocalizacao(text)}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="Descrição"
+            value={descricao_hot}
+            onChangeText={(text) => setDescricao(text)}
+            style={styles.input}
+          />
+          <TouchableOpacity
+            style={styles.button}
+            onPress={editando ? handleEditarHotel : handleCriarHotel}
+          >
+            <Text style={styles.buttonText}>{editando ? 'Salvar' : 'Criar'}</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      <View style={styles.botoesContainer}>
+        <TouchableOpacity style={[styles.botao, { marginRight: 8 }]} onPress={() => setMostrarFormulario(true)}>
+          <Text style={styles.buttonText}>Adicionar</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.botao, { marginRight: 8 }]} onPress={() => handleEditar(hoteis.find(hotel => hotel.selecionado))}>
+          <Text style={styles.buttonText}>Editar</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.botao} onPress={handleExcluirHotel}>
+          <Text style={styles.buttonText}>Excluir</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 16,
+    backgroundColor: '#f2f2f2',
   },
-  headerText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
+  table: {
+    borderColor: '#000',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 16,
   },
-  tableHeader: {
+  tableRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  tableHeaderText: {
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  hoteisList: {
-    marginBottom: 20,
-  },
-  hotelItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     borderBottomWidth: 1,
-    paddingVertical: 8,
     borderColor: '#ccc',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
   },
-  editButton: {
-    color: 'blue',
+  tableCell: {
+    flex: 1,
+    padding: 8,
   },
-  deleteButton: {
-    color: 'red',
+  tableCellHeader: {
+    backgroundColor: '#f2f2f2',
+  },
+  tableCellHeaderText: {
+    fontWeight: 'bold',
+  },
+  tableCellText: {
+    textAlign: 'center',
+  },
+  formulario: {
+    borderColor: '#000',
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 16,
+    marginBottom: 16,
   },
   formTitle: {
     fontSize: 16,
@@ -173,6 +255,18 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  botoesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  botao: {
+    flex: 1,
+    height: 49,
+    backgroundColor: 'blue',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 5,
   },
 });
 
