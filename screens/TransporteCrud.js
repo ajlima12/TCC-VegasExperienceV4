@@ -5,13 +5,13 @@ import firestore from "@react-native-firebase/firestore";
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 
-const PontoturisticoCrud = () => {
+const TransporteCrud = () => {
   const navigation = useNavigation();
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: true,
-      title: 'Crud de Pontos Turísticos',
+      title: 'Crud Transporte',
       headerTitleAlign: 'center',
       headerTitleStyle: {
         fontSize: 20,
@@ -36,90 +36,87 @@ const PontoturisticoCrud = () => {
     });
   }, [navigation]);
 
-  const [pontosTuristicos, setPontosTuristicos] = useState([]);
-  const [nome_ptur, setNomePtur] = useState('');
-  const [localizacao_ptur, setLocalizacaoPtur] = useState('');
-  const [descricao_ptur, setDescricaoPtur] = useState('');
-  const [cod_ptur, setCodPtur] = useState('');
+  const [transportes, setTransportes] = useState([]);
+  const [nome_tpt, setNome] = useState('');
+  const [descricao_tpt, setDescricao] = useState('');
+  const [cod_tpt, setCodTpt] = useState('');
   const [editando, setEditando] = useState(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
   useEffect(() => {
     const unsubscribe = firestore()
-      .collection('pontos_turisticos')
+      .collection('transporte')
       .onSnapshot((snapshot) => {
-        const pontosData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), selecionado: false }));
-        setPontosTuristicos(pontosData);
+        const transportesData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), selecionado: false }));
+        setTransportes(transportesData);
       });
 
     return () => unsubscribe();
   }, []);
 
-  const handleCriarPontoTuristico = async () => {
+  const handleCriarTransporte = async () => {
     try {
-      await firestore().collection('pontos_turisticos').add({ nome_ptur, localizacao_ptur, descricao_ptur, cod_ptur });
-      setNomePtur('');
-      setLocalizacaoPtur('');
-      setDescricaoPtur('');
-      setCodPtur('');
+      await firestore().collection('transporte').add({ nome_tpt, descricao_tpt, cod_tpt });
+      setNome('');
+      setDescricao('');
+      setCodTpt('');
       setMostrarFormulario(false);
     } catch (error) {
-      console.log('Erro ao criar ponto turístico:', error);
+      console.log('Erro ao criar transporte:', error);
     }
   };
 
-  const handleEditarPontoTuristico = async () => {
+  const handleEditarTransporte = async () => {
     if (!editando) {
-      return;
+      Alert.alert('Atenção', 'Nenhum transporte selecionado para editar.');
+      return; // Evitar a edição caso o transporte selecionado não esteja definido
     }
 
     try {
-      await firestore().collection('pontos_turisticos').doc(editando.id).update({ nome_ptur, localizacao_ptur, descricao_ptur, cod_ptur });
-      setNomePtur('');
-      setLocalizacaoPtur('');
-      setDescricaoPtur('');
-      setCodPtur('');
+      await firestore().collection('transporte').doc(editando.id).update({ nome_tpt, descricao_tpt, cod_tpt });
+      setNome('');
+      setDescricao('');
+      setCodTpt('');
       setEditando(null);
       setMostrarFormulario(false);
     } catch (error) {
-      console.log('Erro ao editar ponto turístico:', error);
+      console.log('Erro ao editar transporte:', error);
     }
   };
 
-  const handleExcluirPontoTuristico = async () => {
-    const pontoSelecionado = pontosTuristicos.find((ponto) => ponto.selecionado);
+  const handleExcluirTransporte = async () => {
+    const transporteSelecionado = transportes.find((transporte) => transporte.selecionado);
 
-    if (pontoSelecionado) {
+    if (transporteSelecionado) {
       try {
-        await firestore().collection('pontos_turisticos').doc(pontoSelecionado.id).delete();
+        await firestore().collection('transporte').doc(transporteSelecionado.id).delete();
         setEditando(null);
         setMostrarFormulario(false);
       } catch (error) {
-        console.log('Erro ao excluir ponto turístico:', error);
+        console.log('Erro ao excluir transporte:', error);
       }
     } else {
-      Alert.alert('Atenção', 'Nenhum ponto turístico selecionado para excluir.');
+      Alert.alert('Atenção', 'Nenhum transporte selecionado para excluir.');
     }
   };
 
-  const handleEditar = (ponto) => {
-    if (ponto) {
-      setEditando(ponto);
-      setNomePtur(ponto.nome_ptur);
-      setLocalizacaoPtur(ponto.localizacao_ptur);
-      setDescricaoPtur(ponto.descricao_ptur);
-      setCodPtur(ponto.cod_ptur);
+  const handleEditar = (transporte) => {
+    if (transporte) {
+      setEditando(transporte);
+      setNome(transporte.nome_tpt);
+      setDescricao(transporte.descricao_tpt);
+      setCodTpt(transporte.cod_tpt);
       setMostrarFormulario(true);
     } else {
-      Alert.alert('Atenção', 'Nenhum ponto turístico selecionado para editar.');
+      Alert.alert('Atenção', 'Nenhum transporte selecionado para editar.');
     }
   };
 
-  const handleSelecionarPontoTuristico = (ponto) => {
-    const novosPontos = pontosTuristicos.map((item) =>
-      item.id === ponto.id ? { ...item, selecionado: !item.selecionado } : item
+  const handleSelecionarTransporte = (transporte) => {
+    const novosTransportes = transportes.map((item) =>
+      item.id === transporte.id ? { ...item, selecionado: !item.selecionado } : item
     );
-    setPontosTuristicos(novosPontos);
+    setTransportes(novosTransportes);
   };
 
   return (
@@ -136,33 +133,27 @@ const PontoturisticoCrud = () => {
             <Text style={styles.tableCellHeaderText}>Nome</Text>
           </View>
           <View style={[styles.tableCell, styles.tableCellHeader, styles.centeredHeader]}>
-            <Text style={styles.tableCellHeaderText}>Localização</Text>
-          </View>
-          <View style={[styles.tableCell, styles.tableCellHeader, styles.centeredHeader]}>
             <Text style={styles.tableCellHeaderText}>Descrição</Text>
           </View>
         </View>
-        {pontosTuristicos.map((item) => (
+        {transportes.map((item) => (
           <TouchableOpacity key={item.id} onPress={() => handleEditar(item)}>
             <View style={styles.tableRow}>
               <View style={[styles.tableCell, styles.centeredCell]}>
                 <CheckBox
                   value={item.selecionado}
-                  onValueChange={() => handleSelecionarPontoTuristico(item)}
+                  onValueChange={() => handleSelecionarTransporte(item)}
                 />
               </View>
-              <View style={styles.tableCell}>
-                <Text style={styles.tableCellText}>{item.cod_ptur}</Text>
+              <View style={[styles.tableCell, styles.centeredCell]}>
+                <Text style={styles.tableCellText}>{item.cod_tpt}</Text>
               </View>
-              <View style={styles.tableCell}>
-                <Text style={styles.tableCellText}>{item.nome_ptur}</Text>
+              <View style={[styles.tableCell, styles.centeredCell]}>
+                <Text style={styles.tableCellText}>{item.nome_tpt}</Text>
               </View>
-              <View style={styles.tableCell}>
-                <Text style={styles.tableCellText}>{item.localizacao_ptur}</Text>
-              </View>
-              <View style={styles.tableCell}>
-                <Text style={styles.tableCellText} numberOfLines={1} ellipsizeMode="tail">
-                  {item.descricao_ptur}
+              <View style={[styles.tableCell, styles.centeredCell]}>
+                <Text style={styles.tableCellText} numberOfLines={2} ellipsizeMode="tail">
+                  {item.descricao_tpt}
                 </Text>
               </View>
             </View>
@@ -171,36 +162,30 @@ const PontoturisticoCrud = () => {
       </View>
       {mostrarFormulario && (
         <View style={styles.formulario}>
-          <Text style={styles.formTitle}>{editando ? 'Editar Ponto Turístico:' : 'Novo Ponto Turístico:'}</Text>
+          <Text style={styles.formTitle}>{editando ? 'Editar Transporte:' : 'Novo Transporte:'}</Text>
           <View style={styles.inputContainer}>
-          <TextInput
+            <TextInput
               placeholder="Código"
-              value={cod_ptur}
-              onChangeText={(text) => setCodPtur(text)}
+              value={cod_tpt}
+              onChangeText={(text) => setCodTpt(text)}
               style={styles.input}
             />
             <TextInput
               placeholder="Nome"
-              value={nome_ptur}
-              onChangeText={(text) => setNomePtur(text)}
-              style={styles.input}
-            />
-            <TextInput
-              placeholder="Localizacao"
-              value={localizacao_ptur}
-              onChangeText={(text) => setLocalizacaoPtur(text)}
+              value={nome_tpt}
+              onChangeText={(text) => setNome(text)}
               style={styles.input}
             />
             <TextInput
               placeholder="Descrição"
-              value={descricao_ptur}
-              onChangeText={(text) => setDescricaoPtur(text)}
+              value={descricao_tpt}
+              onChangeText={(text) => setDescricao(text)}
               style={styles.input}
             />
           </View>
           <TouchableOpacity
             style={styles.button}
-            onPress={editando ? handleEditarPontoTuristico : handleCriarPontoTuristico}
+            onPress={editando ? handleEditarTransporte : handleCriarTransporte}
           >
             <Text style={styles.buttonText}>{editando ? 'Salvar' : 'Criar'}</Text>
           </TouchableOpacity>
@@ -210,10 +195,10 @@ const PontoturisticoCrud = () => {
         <TouchableOpacity style={[styles.botao, { marginRight: 8 }]} onPress={() => setMostrarFormulario(true)}>
           <Text style={styles.buttonText}>Adicionar</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.botao, { marginRight: 8 }]} onPress={() => handleEditar(pontosTuristicos.find(ponto => ponto.selecionado))}>
+        <TouchableOpacity style={[styles.botao, { marginRight: 8 }]} onPress={() => handleEditar(transportes.find(transporte => transporte.selecionado))}>
           <Text style={styles.buttonText}>Editar</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.botao} onPress={handleExcluirPontoTuristico}>
+        <TouchableOpacity style={styles.botao} onPress={handleExcluirTransporte}>
           <Text style={styles.buttonText}>Excluir</Text>
         </TouchableOpacity>
       </View>
@@ -239,7 +224,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#ccc',
     paddingHorizontal: 8,
-    paddingVertical: 8,
+    paddingVertical: 2,
   },
   tableCell: {
     flex: 1,
@@ -250,10 +235,15 @@ const styles = StyleSheet.create({
   },
   tableCellHeaderText: {
     fontWeight: 'bold',
-    textAlign: 'center',
   },
   tableCellText: {
     textAlign: 'center',
+  },
+  centeredHeader: {
+    alignItems: 'center',
+  },
+  centeredCell: {
+    alignItems: 'center',
   },
   formulario: {
     borderColor: '#000',
@@ -301,4 +291,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PontoturisticoCrud;
+export default TransporteCrud;

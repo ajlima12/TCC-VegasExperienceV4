@@ -64,7 +64,7 @@ const OpcoesScreen = () => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.button}
-          //onPress={() => handleNavigation('TransporteScreen')}
+          onPress={() => handleNavigation('TransporteCrud')}
         >
           <Text style={styles.buttonText}>Transporte</Text>
         </TouchableOpacity>

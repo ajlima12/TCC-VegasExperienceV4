@@ -19,6 +19,7 @@ import PlacaScreen from './screens/PlacaScreen';
 import OpcoesScreen from './screens/OpcoesScreen';
 import HotelCrud from './screens/HotelCrud';
 import PontoturisticoCrud from './screens/PontoturisticoCrud';
+import TransporteCrud from './screens/TransporteCrud';
 
 
 
@@ -67,7 +68,7 @@ function TabBar() {
   );
 }
 
-// Componente que representa o StackNavigator para a aba Home
+// Componente que representa o StackNavigator para a aba 
 function HomeScreenStack() {
   return (
     <Stack.Navigator>
@@ -81,7 +82,7 @@ function HomeScreenStack() {
       <Stack.Screen name="Opcoes" component={OpcoesScreen} />
       <Stack.Screen name="HotelCrud" component={HotelCrud} />
         <Stack.Screen name="PontoturisticoCrud" component={PontoturisticoCrud} />
-
+        <Stack.Screen name="TransporteCrud" component={TransporteCrud} />
     </Stack.Navigator>
   );
 }

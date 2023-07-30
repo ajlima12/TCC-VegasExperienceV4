@@ -40,6 +40,7 @@ const HotelCrud = () => {
   const [nome_hot, setNome] = useState('');
   const [localizacao_hot, setLocalizacao] = useState('');
   const [descricao_hot, setDescricao] = useState('');
+  const [cod_hot, setCodHot] = useState('');
   const [editando, setEditando] = useState(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
@@ -56,10 +57,11 @@ const HotelCrud = () => {
 
   const handleCriarHotel = async () => {
     try {
-      await firestore().collection('hoteis').add({ nome_hot, localizacao_hot, descricao_hot });
+      await firestore().collection('hoteis').add({ nome_hot, localizacao_hot, descricao_hot, cod_hot });
       setNome('');
       setLocalizacao('');
       setDescricao('');
+      setCodHot('');
       setMostrarFormulario(false);
     } catch (error) {
       console.log('Erro ao criar hotel:', error);
@@ -73,10 +75,11 @@ const HotelCrud = () => {
     }
 
     try {
-      await firestore().collection('hoteis').doc(editando.id).update({ nome_hot, localizacao_hot, descricao_hot });
+      await firestore().collection('hoteis').doc(editando.id).update({ nome_hot, localizacao_hot, descricao_hot, cod_hot });
       setNome('');
       setLocalizacao('');
       setDescricao('');
+      setCodHot('');
       setEditando(null);
       setMostrarFormulario(false);
     } catch (error) {
@@ -106,6 +109,7 @@ const HotelCrud = () => {
       setNome(hotel.nome_hot);
       setLocalizacao(hotel.localizacao_hot);
       setDescricao(hotel.descricao_hot);
+      setCodHot(hotel.cod_hot);
       setMostrarFormulario(true);
     } else {
       Alert.alert('Atenção', 'Nenhum hotel selecionado para editar.');
@@ -127,6 +131,9 @@ const HotelCrud = () => {
             <Text style={styles.tableCellHeaderText}>Selecionar</Text>
           </View>
           <View style={[styles.tableCell, styles.tableCellHeader, styles.centeredHeader]}>
+            <Text style={styles.tableCellHeaderText}>Código</Text>
+          </View>
+          <View style={[styles.tableCell, styles.tableCellHeader, styles.centeredHeader]}>
             <Text style={styles.tableCellHeaderText}>Nome</Text>
           </View>
           <View style={[styles.tableCell, styles.tableCellHeader, styles.centeredHeader]}>
@@ -146,13 +153,16 @@ const HotelCrud = () => {
                 />
               </View>
               <View style={[styles.tableCell, styles.centeredCell]}>
+                <Text style={styles.tableCellText}>{item.cod_hot}</Text>
+              </View>
+              <View style={[styles.tableCell, styles.centeredCell]}>
                 <Text style={styles.tableCellText}>{item.nome_hot}</Text>
               </View>
               <View style={[styles.tableCell, styles.centeredCell]}>
                 <Text style={styles.tableCellText}>{item.localizacao_hot}</Text>
               </View>
               <View style={[styles.tableCell, styles.centeredCell]}>
-                <Text style={styles.tableCellText} numberOfLines={1} ellipsizeMode="tail">
+                <Text style={styles.tableCellText} numberOfLines={2} ellipsizeMode="tail">
                   {item.descricao_hot}
                 </Text>
               </View>
@@ -164,6 +174,12 @@ const HotelCrud = () => {
         <View style={styles.formulario}>
           <Text style={styles.formTitle}>{editando ? 'Editar Hotel:' : 'Novo Hotel:'}</Text>
           <View style={styles.inputContainer}>
+          <TextInput
+              placeholder="Código"
+              value={cod_hot}
+              onChangeText={(text) => setCodHot(text)}
+              style={styles.input}
+            />
             <TextInput
               placeholder="Nome"
               value={nome_hot}
